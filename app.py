@@ -7,8 +7,6 @@ from webwhatsapi import WhatsAPIDriver
 
 logging.basicConfig(level=logging.ERROR)
 
-driver = WhatsAPIDriver(loadstyles=True)
-
 
 def connect_bot():
     """
@@ -21,32 +19,23 @@ def connect_bot():
         print('Waiting for loging...')
         driver.wait_for_login()
         print('Bot Starded!')
-        get_msg()
+        return True
     except BaseException as e:
         if e == 'Timeout: Not logged':
             driver.close()
             connect_bot()
 
 
-def get_msg():
-    while True:
+def get_chats_ids(driver):
+    try:
         chats_ids = driver.get_all_chat_ids()
-        for id in chats_ids:
-            if id is not None:
-                # if chat == '553499768872-1541449260@g.us' or chat == '5511995192105-1520886507@g.us':
-                # messages = driver.get_all_messages_in_chat(chat=chat_teste)
-                contact_message = driver.get_unread_messages_in_chat(str(id), include_me=True)
-                for msg in contact_message:
-                    message = msg.content
-                    print(message)
-                    frase(message)
-                    words = word_tokenize(message.lower())
-                    save_word(words)
-                continue
-            else:
-                continue
-        continue
-    get_msg()
+        return chats_ids
+    except BaseException as e:
+        print(e)
+        return False
+
+def get_message(driver, id_chat):
+    unread_messages = driver.get_unread_messages_in_chat(str(id_chat), include_me=True)
 
 
 def unread_msg():
@@ -88,5 +77,36 @@ def save_word(words):
         w.save(word)
 
 
+def get_messages(driver, chats_ids):
+    for chat_id in chats_ids:
+        if chat_id is not None:
+            messages_in_chat = driver.get_unread_messages_in_chat(chat_id, include_me=True)
+        return messages_in_chat
+
+
 if __name__ == '__main__':
-    connect_bot()
+    driver = WhatsAPIDriver(loadstyles=True)
+    connect = connect_bot()
+    while connect is True:
+        chats_ids = get_chats_ids(driver)
+        messages_chat = get_messages(driver, chats_ids)
+        for msg in messages_chat:
+            print(msg.content)
+
+
+    ''' 
+        if id is not None:
+            # if chat == '553499768872-1541449260@g.us' or chat == '5511995192105-1520886507@g.us':
+            # messages = driver.get_all_messages_in_chat(chat=chat_teste)
+            contact_message = driver.get_unread_messages_in_chat(str(id), include_me=True)
+            for msg in contact_message:
+                message = msg.content
+                print(message)
+                frase(message)
+                words = word_tokenize(message.lower())
+                save_word(words)
+            continue
+        else:
+            continue
+    continue
+    main()'''
