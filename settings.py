@@ -1,1 +1,0 @@
-db_mysql = 'mysql+pymysql://app_bot:MinhaSenhaMinhaRegra@127.0.0.1/dbbot'

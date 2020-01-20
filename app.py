@@ -4,6 +4,8 @@
 import logging
 from asyncio import sleep
 from webwhatsapi import WhatsAPIDriver
+from models import Message
+from decouple import config
 
 logging.basicConfig(level=logging.ERROR)
 
@@ -62,14 +64,19 @@ def stop_words(words):
     return stops
 
 
-def frase(message):
+def save_message(messages_chat: list):
     """
     Faz o salvamento das frases no banco de dados.
     :param message: Texto contendo as mensagem.
-    :type message: String
+    :type message: dict
     """
-    f = Frase()
-    save = f.save(message)
+    db_url = config('DATABASE_URL')
+    port = config('DATABASE_PORT', cast=int)
+    m = Message(db_url, port)
+    for message in messages_chat:
+        print(message)
+
+
 
 def save_word(words):
     w = Word()
@@ -90,8 +97,8 @@ if __name__ == '__main__':
     while connect is True:
         chats_ids = get_chats_ids(driver)
         messages_chat = get_messages(driver, chats_ids)
-        for msg in messages_chat:
-            print(msg.content)
+        save_message(messages_chat)
+
 
 
     ''' 

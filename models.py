@@ -1,10 +1,28 @@
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String
+from pymongo import MongoClient
+from decouple import config
 
 
-engine = create_engine('db_mysql', encoding='utf8', echo=True)
-BASE = declarative_base()
+class Message:
+
+    def __init__(self, db_url, port):
+        self.db_url = db_url
+        self.port = port
+
+    def client(self):
+        client = MongoClient(self.db_url, self.port)
+        return client
+
+    def save_message(self, msg):
+        db = self.client.message
+        db.insert_one(msg)
+
+
+
+
+
+
+
+
 
 
 
