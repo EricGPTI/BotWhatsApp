@@ -5,6 +5,7 @@ import logging
 from asyncio import sleep
 from webwhatsapi import WhatsAPIDriver
 from models import Message
+
 from decouple import config
 
 logging.basicConfig(level=logging.ERROR)
@@ -36,8 +37,8 @@ def get_chats_ids(driver):
         print(e)
         return False
 
-def get_message(driver, id_chat):
-    unread_messages = driver.get_unread_messages_in_chat(str(id_chat), include_me=True)
+#def get_message(driver, id_chat):
+#   unread_messages = driver.get_unread_messages_in_chat(str(id_chat), include_me=True)
 
 
 def unread_msg():
@@ -84,11 +85,16 @@ def save_word(words):
         w.save(word)
 
 
-def get_messages(driver, chats_ids):
+def get_unread_messages(driver):
     for chat_id in chats_ids:
         if chat_id is not None:
-            messages_in_chat = driver.get_unread_messages_in_chat(chat_id, include_me=True)
-        return messages_in_chat
+            messages_in_chat = driver.get_unread(include_me=True, include_notifications=True)
+            return messages_in_chat
+
+
+def get_data_message(content):
+    for data in content.messages:
+        print(data.content)
 
 
 if __name__ == '__main__':
@@ -96,8 +102,14 @@ if __name__ == '__main__':
     connect = connect_bot()
     while connect is True:
         chats_ids = get_chats_ids(driver)
-        messages_chat = get_messages(driver, chats_ids)
-        save_message(messages_chat)
+        unread_message = get_unread_messages(driver)
+        for content in unread_message:
+            data_obj = get_data_message(content)
+            data_message = get_data_message(content)
+
+
+        #    print(message)
+        #save_message(messages_chat)
 
 
 
