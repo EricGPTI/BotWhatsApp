@@ -3,10 +3,11 @@
 
 import logging
 from asyncio import sleep
-from webwhatsapi import WhatsAPIDriver
-from models import Message
 
 from decouple import config
+
+from models import Message
+from webwhatsapi import WhatsAPIDriver
 
 logging.basicConfig(level=logging.ERROR)
 
@@ -93,9 +94,20 @@ def get_unread_messages(driver):
 
 
 def get_data_message(content):
-    for data in content.messages:
-        print(data.content)
-
+    for msg in content.messages:
+        if msg.type not in ['call_log', 'e2e_notification', 'gp2']:
+            try:
+                message = {
+                    'msg_type': msg.type,
+                    'msg_sender': msg.sender,
+                    'msg_date': msg.timestamp,
+                    'msg': msg.content
+                }
+                return message
+            except AttributeError:
+                continue
+        return None
+        
 
 if __name__ == '__main__':
     driver = WhatsAPIDriver(loadstyles=True)
@@ -106,6 +118,12 @@ if __name__ == '__main__':
         for content in unread_message:
             data_obj = get_data_message(content)
             data_message = get_data_message(content)
+            if data_message is not None:
+                date_message['msg_sender']
+                contact = get_contact(date_message)
+                print(contact)
+
+
 
 
         #    print(message)
