@@ -107,6 +107,18 @@ def get_data_message(content):
             except AttributeError:
                 continue
         return None
+
+def get_sender(sender_data):
+    sender_id = sender_data.replace("<", "").replace(">","").replace("(","").replace(")","").split(" ")[-1]
+    sender_name_obj = sender_data.replace("<", "").replace(">","").replace("(","").replace(")","").split(" ")[1:-2]
+    separator = ' '
+    sender_name = separator.join(sender_name_obj))
+    data_sender = {
+        'sender_id': sender_id,
+        'sender_name': sender_name
+    }
+    return data_sender.
+
         
 
 if __name__ == '__main__':
@@ -116,12 +128,11 @@ if __name__ == '__main__':
         chats_ids = get_chats_ids(driver)
         unread_message = get_unread_messages(driver)
         for content in unread_message:
-            data_obj = get_data_message(content)
             data_message = get_data_message(content)
             if data_message is not None:
-                date_message['msg_sender']
-                contact = get_contact(date_message)
-                print(contact)
+                sender_data = str(data_message['msg_sender'])
+                sender_data_obj = get_sender(sender_data)
+                
 
 
 
