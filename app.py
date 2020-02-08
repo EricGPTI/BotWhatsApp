@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #-*- conding: utf-8 -*-
-
+import json
 import logging
 from asyncio import sleep
 
@@ -8,6 +8,7 @@ from decouple import config
 
 from models import Message
 from webwhatsapi import WhatsAPIDriver
+from webwhatsapi.objects.message import MMSMessage
 
 logging.basicConfig(level=logging.ERROR)
 
@@ -75,8 +76,7 @@ def save_message(messages_chat: list):
     db_url = config('DATABASE_URL')
     port = config('DATABASE_PORT', cast=int)
     m = Message(db_url, port)
-    for message in messages_chat:
-        print(message)
+    # Precisa salvar as mensagens em banco de dados
 
 
 
@@ -89,37 +89,37 @@ def save_word(words):
 def get_unread_messages(driver):
     for chat_id in chats_ids:
         if chat_id is not None:
-            messages_in_chat = driver.get_unread(include_me=True, include_notifications=True)
-            return messages_in_chat
+            try:
+                messages_in_chat = driver.get_unread(include_me=True, include_notifications=True)
+                return messages_in_chat
+            except AttributeError:
+                return None
 
 
 def get_data_message(content):
     for msg in content.messages:
         if msg.type not in ['call_log', 'e2e_notification', 'gp2']:
-            try:
-                message = {
-                    'msg_type': msg.type,
-                    'msg_sender': msg.sender,
-                    'msg_date': msg.timestamp,
-                    'msg': msg.content
-                }
-                return message
-            except AttributeError:
-                continue
+            msg_type = msg.type,
+            chat_id_obj = json.dumps(msg.chat_id['_serialized']),
+            chat_id = chat_id_obj[0][1:-1]
+            if msg_type == 'image':
+                msg_content = 'IMG',
+            elif isinstance(msg, MMSMessage):
+                msg_content = 'MMSMessage'
+            else:
+                msg_content = msg.content
+            message = {
+                'msg_id': msg.id,
+                'msg_type': msg.type,
+                'msg_chat_id': chat_id,
+                'msg_sender_id': msg.sender.id,
+                'msg_sender': msg.sender.name,
+                'msg_date': msg.timestamp,
+                'msg': msg_content,
+            }
+            return message
         return None
 
-def get_sender(sender_data):
-    sender_id = sender_data.replace("<", "").replace(">","").replace("(","").replace(")","").split(" ")[-1]
-    sender_name_obj = sender_data.replace("<", "").replace(">","").replace("(","").replace(")","").split(" ")[1:-2]
-    separator = ' '
-    sender_name = separator.join(sender_name_obj))
-    data_sender = {
-        'sender_id': sender_id,
-        'sender_name': sender_name
-    }
-    return data_sender.
-
-        
 
 if __name__ == '__main__':
     driver = WhatsAPIDriver(loadstyles=True)
@@ -127,34 +127,10 @@ if __name__ == '__main__':
     while connect is True:
         chats_ids = get_chats_ids(driver)
         unread_message = get_unread_messages(driver)
-        for content in unread_message:
-            data_message = get_data_message(content)
-            if data_message is not None:
-                sender_data = str(data_message['msg_sender'])
-                sender_data_obj = get_sender(sender_data)
-                
-
-
-
-
-        #    print(message)
-        #save_message(messages_chat)
-
-
-
-    ''' 
-        if id is not None:
-            # if chat == '553499768872-1541449260@g.us' or chat == '5511995192105-1520886507@g.us':
-            # messages = driver.get_all_messages_in_chat(chat=chat_teste)
-            contact_message = driver.get_unread_messages_in_chat(str(id), include_me=True)
-            for msg in contact_message:
-                message = msg.content
-                print(message)
-                frase(message)
-                words = word_tokenize(message.lower())
-                save_word(words)
-            continue
-        else:
-            continue
-    continue
-    main()'''
+        if unread_message is not None:
+            for content in unread_message:
+                message = get_data_message(content)
+                if message is not None:
+                    save_message(message)
+                continue
+        continue
