@@ -3,6 +3,7 @@
 import json
 import logging
 from asyncio import sleep
+from models import Message
 
 from decouple import config
 
@@ -67,7 +68,7 @@ def stop_words(words):
     return stops
 
 
-def save_message(messages_chat: list):
+def save_message(message: dict):
     """
     Faz o salvamento das frases no banco de dados.
     :param message: Texto contendo as mensagem.
@@ -75,9 +76,8 @@ def save_message(messages_chat: list):
     """
     db_url = config('DATABASE_URL')
     port = config('DATABASE_PORT', cast=int)
-    m = Message(db_url, port)
-    # Precisa salvar as mensagens em banco de dados
-
+    m = Message(db_url, port, message)
+    m.save_message()
 
 
 def save_word(words):

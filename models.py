@@ -1,28 +1,18 @@
 from pymongo import MongoClient
-from decouple import config
 
 
 class Message:
 
-    def __init__(self, db_url, port):
+    def __init__(self, db_url, port, message):
         self.db_url = db_url
         self.port = port
+        self.message = message
 
     def client(self):
         client = MongoClient(self.db_url, self.port)
         return client
 
-    def save_message(self, msg):
-        db = self.client.message
-        db.insert_one(msg)
-
-
-
-
-
-
-
-
-
-
-
+    def save_message(self):
+        client = self.client()
+        db = client.dbbot
+        db.message.insert_one(self.message)
