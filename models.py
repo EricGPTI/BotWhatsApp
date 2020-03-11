@@ -1,4 +1,7 @@
 from pymongo import MongoClient
+from decouple import config
+
+
 
 
 class Message:
@@ -32,4 +35,10 @@ class Chat:
     def update_chat(self):
         _client = self.client()
         db = _client.dbbot
-        db.chat.update(self.chat, upset=True)
+        db.chat.update_one({'_id': 1}, {'$push': {'chat': self.chat}})
+
+    def find_chat(self):
+        _client = self.client()
+        db = _client.dbbot
+        query_chat = db.chat.find()
+        return query_chat

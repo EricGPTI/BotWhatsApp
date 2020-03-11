@@ -71,12 +71,13 @@ def get_all_chats(driver: object) -> list:
     :rtype: list
     """
     list_chat = driver.get_all_chats()
-    chats = []
+    chat_group = []
     for chat in list_chat:
         str_chat = str(chat).split(':')[0].split('-')[1].replace(' ', '')
-        chats.append(str_chat)
-    save_chat(chats)
-    return
+        chat_group.append(str_chat)
+    print(len(chat_group))
+    print(chat_group)
+    save_chat(chat_group)
 
 
 def get_unread_messages(driver):
@@ -132,7 +133,7 @@ def save_message(message: dict):
     m.save_message()
 
 
-def save_chat(str_chat: list):
+def save_chat(chats: list):
     """
     Salva o nome de todos os chats
     :param str_chat: Lista contendo o nome de todos os chats.
@@ -140,8 +141,8 @@ def save_chat(str_chat: list):
     """
     db_url = config('DATABASE_URL')
     port = config('DATABASE_PORT', cast=int)
-    c = Chat(db_url, port, str_chat)
-    c. update_chat()
+    c = Chat(db_url, port, chats)
+    c.update_chat(chats)
 
 
 if __name__ == '__main__':
