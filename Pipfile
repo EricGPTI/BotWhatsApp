@@ -24,7 +24,6 @@ python-magic-bin = "*"
 pytz = "*"
 requests = "*"
 pymongo = "*"
-decouple = "*"
 python-decouple = "*"
 
 [requires]

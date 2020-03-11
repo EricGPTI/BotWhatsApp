@@ -4,13 +4,15 @@ import json
 import logging
 from asyncio import sleep
 from models import Message
+from models import Chat
+
 
 from decouple import config
 
 from models import Message
 from webwhatsapi import WhatsAPIDriver
-from webwhatsapi.objects.message import MMSMessage
-
+from webwhatsapi.objects.message import MMSMessage, MediaMessage
+from webwhatsapi.objects.chat import GroupChat, UserChat
 logging.basicConfig(level=logging.ERROR)
 
 
@@ -33,15 +35,19 @@ def connect_bot():
 
 
 def get_chats_ids(driver):
+    """
+    Função que faz a busca dos ids dos chats
+    :param driver: Driver de conexão com o whatsapp.
+    :type driver: Object.
+    :return: Todos os Ids de chats existentes num perfil de whatsapp or False
+    :rtype: Lista
+    """
     try:
         chats_ids = driver.get_all_chat_ids()
         return chats_ids
     except BaseException as e:
         print(e)
         return False
-
-#def get_message(driver, id_chat):
-#   unread_messages = driver.get_unread_messages_in_chat(str(id_chat), include_me=True)
 
 
 def unread_msg():
@@ -56,16 +62,62 @@ def unread_msg():
         return contact
 
 
-def stop_words(words):
+def get_all_chats(driver: object) -> list:
     """
-    Trata texto retornando os stopwords.
-    :param words: Lista de palavras
-    :type words: List
-    :return: Lista de stopwords.
-    :rtype: List
+    Obtem e manipula todos os chats do whatsapp.
+    :param driver: Objeto contendo todos os métodos.
+    :type driver: Objeto.
+    :return: Retorna no nome de todos os chats
+    :rtype: list
     """
-    stops = stopwords.words('portuguese')
-    return stops
+    list_chat = driver.get_all_chats()
+    chats = []
+    for chat in list_chat:
+        str_chat = str(chat).split(':')[0].split('-')[1].replace(' ', '')
+        chats.append(str_chat)
+    save_chat(chats)
+    return
+
+
+def get_unread_messages(driver):
+    for chat_id in chats_ids:
+        if chat_id is not None:
+            try:
+                messages_in_chat = driver.get_unread(include_me=True)
+                return messages_in_chat
+            except AttributeError:
+                return None
+
+
+def get_data_message(content):
+    for msg in content.messages:
+        if msg.type not in ['call_log', 'e2e_notification', 'gp2']:
+            msg_type = msg.type,
+            chat_id = msg.chat_id['_serialized']
+            chat = driver.get_chat_from_id(chat_id)
+            chat_obj = chat.get_js_obj()
+            chat_name = chat_obj.get('name')
+
+            if msg_type == 'image':
+                msg_content = 'IMG',
+            elif isinstance(msg, MMSMessage):
+                msg_content = 'MMSMessage'
+            elif isinstance(msg, MediaMessage):
+                msg_content = 'MediaMessage'
+            else:
+                msg_content = msg.content
+            message = {
+                'msg_id': msg.id,
+                'msg_type': msg.type,
+                'msg_chat_id': chat_id,
+                'chat_name': chat_name,
+                'msg_sender_id': msg.sender.id,
+                'msg_sender': msg.sender.name,
+                'msg_date': msg.timestamp,
+                'msg': msg_content,
+            }
+            return message
+        return None
 
 
 def save_message(message: dict):
@@ -80,45 +132,16 @@ def save_message(message: dict):
     m.save_message()
 
 
-def save_word(words):
-    w = Word()
-    for word in words:
-        w.save(word)
-
-
-def get_unread_messages(driver):
-    for chat_id in chats_ids:
-        if chat_id is not None:
-            try:
-                messages_in_chat = driver.get_unread(include_me=True, include_notifications=True)
-                return messages_in_chat
-            except AttributeError:
-                return None
-
-
-def get_data_message(content):
-    for msg in content.messages:
-        if msg.type not in ['call_log', 'e2e_notification', 'gp2']:
-            msg_type = msg.type,
-            chat_id_obj = json.dumps(msg.chat_id['_serialized']),
-            chat_id = chat_id_obj[0][1:-1]
-            if msg_type == 'image':
-                msg_content = 'IMG',
-            elif isinstance(msg, MMSMessage):
-                msg_content = 'MMSMessage'
-            else:
-                msg_content = msg.content
-            message = {
-                'msg_id': msg.id,
-                'msg_type': msg.type,
-                'msg_chat_id': chat_id,
-                'msg_sender_id': msg.sender.id,
-                'msg_sender': msg.sender.name,
-                'msg_date': msg.timestamp,
-                'msg': msg_content,
-            }
-            return message
-        return None
+def save_chat(str_chat: list):
+    """
+    Salva o nome de todos os chats
+    :param str_chat: Lista contendo o nome de todos os chats.
+    :type str_chat: list
+    """
+    db_url = config('DATABASE_URL')
+    port = config('DATABASE_PORT', cast=int)
+    c = Chat(db_url, port, str_chat)
+    c. update_chat()
 
 
 if __name__ == '__main__':
@@ -126,6 +149,7 @@ if __name__ == '__main__':
     connect = connect_bot()
     while connect is True:
         chats_ids = get_chats_ids(driver)
+        get_all_chats(driver)
         unread_message = get_unread_messages(driver)
         if unread_message is not None:
             for content in unread_message:
