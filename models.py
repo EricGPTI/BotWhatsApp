@@ -40,5 +40,9 @@ class Chat:
     def find_chat(self):
         _client = self.client()
         db = _client.dbbot
-        query_chat = db.chat.find()
-        return query_chat
+        _chat = db.chat.find_one({'_id': 1}, {'chat': {$eq: self.chat}})
+        return _chat
+        #list_chat = []
+        #for obj in query_chat:
+        #    list_chat.append(obj)
+        #return list_chat

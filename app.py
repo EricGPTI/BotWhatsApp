@@ -62,22 +62,23 @@ def unread_msg():
         return contact
 
 
-def get_all_chats(driver: object) -> list:
-    """
-    Obtem e manipula todos os chats do whatsapp.
-    :param driver: Objeto contendo todos os métodos.
-    :type driver: Objeto.
-    :return: Retorna no nome de todos os chats
-    :rtype: list
-    """
-    list_chat = driver.get_all_chats()
-    chat_group = []
-    for chat in list_chat:
-        str_chat = str(chat).split(':')[0].split('-')[1].replace(' ', '')
-        chat_group.append(str_chat)
-    print(len(chat_group))
-    print(chat_group)
-    save_chat(chat_group)
+#def get_all_chats(driver: object) -> list:
+#    """
+#    Obtem e manipula todos os chats do whatsapp.
+#    :param driver: Objeto contendo todos os métodos.
+#    :type driver: Objeto.
+#    :return: Retorna no nome de todos os chats
+#    :rtype: list
+#    """
+#    list_chat = driver.get_all_chats()
+#    print(list_chat)
+#    chat_group = []
+#    for chat in list_chat:
+#        str_chat = str(chat).split(':')[0].split('-')[1].replace(' ', '')
+#        chat_group.append(str_chat)
+#    print(len(chat_group))
+#    print(chat_group)
+#    save_chat(chat_group)
 
 
 def get_unread_messages(driver):
@@ -98,7 +99,7 @@ def get_data_message(content):
             chat = driver.get_chat_from_id(chat_id)
             chat_obj = chat.get_js_obj()
             chat_name = chat_obj.get('name')
-
+            save_chat(chat_name)
             if msg_type == 'image':
                 msg_content = 'IMG',
             elif isinstance(msg, MMSMessage):
@@ -133,7 +134,7 @@ def save_message(message: dict):
     m.save_message()
 
 
-def save_chat(chats: list):
+def save_chat(chat_name: str):
     """
     Salva o nome de todos os chats
     :param str_chat: Lista contendo o nome de todos os chats.
@@ -141,8 +142,10 @@ def save_chat(chats: list):
     """
     db_url = config('DATABASE_URL')
     port = config('DATABASE_PORT', cast=int)
-    c = Chat(db_url, port, chats)
-    c.update_chat(chats)
+    c = Chat(db_url, port, chat_name)
+    chat_obj = c.find_chat()
+    print(chat_obj)
+    c.update_chat()
 
 
 if __name__ == '__main__':
@@ -150,7 +153,7 @@ if __name__ == '__main__':
     connect = connect_bot()
     while connect is True:
         chats_ids = get_chats_ids(driver)
-        get_all_chats(driver)
+        #get_all_chats(driver)
         unread_message = get_unread_messages(driver)
         if unread_message is not None:
             for content in unread_message:
