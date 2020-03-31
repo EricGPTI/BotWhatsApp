@@ -25,6 +25,7 @@ pytz = "*"
 requests = "*"
 pymongo = "*"
 python-decouple = "*"
+webwhatsapi = "*"
 
 [requires]
 python_version = "3.6"

@@ -50,7 +50,7 @@ def get_chats_ids(driver):
         return False
 
 
-def unread_msg():
+def unread_msg(driver):
     """
     Busca mensagens não lidas enviadas por grupos ou pessoas.
     :return: Objeto contacts.
@@ -62,26 +62,7 @@ def unread_msg():
         return contact
 
 
-#def get_all_chats(driver: object) -> list:
-#    """
-#    Obtem e manipula todos os chats do whatsapp.
-#    :param driver: Objeto contendo todos os métodos.
-#    :type driver: Objeto.
-#    :return: Retorna no nome de todos os chats
-#    :rtype: list
-#    """
-#    list_chat = driver.get_all_chats()
-#    print(list_chat)
-#    chat_group = []
-#    for chat in list_chat:
-#        str_chat = str(chat).split(':')[0].split('-')[1].replace(' ', '')
-#        chat_group.append(str_chat)
-#    print(len(chat_group))
-#    print(chat_group)
-#    save_chat(chat_group)
-
-
-def get_unread_messages(driver):
+def get_unread_messages(chats_ids):
     for chat_id in chats_ids:
         if chat_id is not None:
             try:
@@ -91,8 +72,8 @@ def get_unread_messages(driver):
                 return None
 
 
-def get_data_message(content):
-    for msg in content.messages:
+def get_data_message(unread):
+    for msg in unread.messages:
         if msg.type not in ['call_log', 'e2e_notification', 'gp2']:
             msg_type = msg.type,
             chat_id = msg.chat_id['_serialized']
@@ -144,7 +125,6 @@ def save_chat(chat_name: str):
     port = config('DATABASE_PORT', cast=int)
     c = Chat(db_url, port, chat_name)
     chat_obj = c.find_chat()
-    print(chat_obj)
     c.update_chat()
 
 
@@ -152,13 +132,11 @@ if __name__ == '__main__':
     driver = WhatsAPIDriver(loadstyles=True)
     connect = connect_bot()
     while connect is True:
-        chats_ids = get_chats_ids(driver)
-        #get_all_chats(driver)
-        unread_message = get_unread_messages(driver)
-        if unread_message is not None:
-            for content in unread_message:
-                message = get_data_message(content)
-                if message is not None:
-                    save_message(message)
-                continue
+        sleep(3)
+        unread = unread_msg(driver)
+        if unread is not None:
+            message = get_data_message(unread)
+            if message is not None:
+                save_message(message)
+            continue
         continue
