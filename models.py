@@ -1,7 +1,4 @@
 from pymongo import MongoClient
-from decouple import config
-
-
 
 
 class Message:
@@ -40,5 +37,7 @@ class Chat:
     def find_chat(self):
         _client = self.client()
         db = _client.dbbot
-        _chat = db.chat.find_one({'_id': 1, 'chat': {'$eq': self.chat}})
-        return _chat
+        _chat = db.chat.find_one({'chat': self.chat})
+        if _chat is None:
+            return False
+        return True

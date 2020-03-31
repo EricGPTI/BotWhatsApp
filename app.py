@@ -1,18 +1,14 @@
 #!/usr/bin/python
 #-*- conding: utf-8 -*-
-import json
+
 import logging
 from asyncio import sleep
-from models import Message
 from models import Chat
-
-
 from decouple import config
-
 from models import Message
 from webwhatsapi import WhatsAPIDriver
 from webwhatsapi.objects.message import MMSMessage, MediaMessage
-from webwhatsapi.objects.chat import GroupChat, UserChat
+
 logging.basicConfig(level=logging.ERROR)
 
 
@@ -125,7 +121,8 @@ def save_chat(chat_name: str):
     port = config('DATABASE_PORT', cast=int)
     c = Chat(db_url, port, chat_name)
     chat_obj = c.find_chat()
-    c.update_chat()
+    if chat_obj is False:
+        c.update_chat()
 
 
 if __name__ == '__main__':
