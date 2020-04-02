@@ -83,6 +83,8 @@ def get_data_message(unread):
                 msg_content = 'MMSMessage'
             elif isinstance(msg, MediaMessage):
                 msg_content = 'MediaMessage'
+            elif isinstance(msg, 'Message'):
+                msg_content = msg.safe_content
             else:
                 msg_content = msg.content
             message = {
