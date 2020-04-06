@@ -86,7 +86,10 @@ def get_data_message(unread):
             elif isinstance(msg, Message):
                 msg_content = msg.safe_content
             else:
-                msg_content = msg.content
+                try:
+                    msg_content = msg.content
+                except AttributeError:
+                    msg_content = None
             message = {
                 'msg_id': msg.id,
                 'msg_type': msg.type,
