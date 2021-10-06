@@ -10,7 +10,7 @@ idna==2.8
 idna-ssl==1.1.0
 multidict==4.7.4
 numpy==1.18.1
-protobuf==3.11.3
+protobuf==3.18.1
 pycparser==2.19
 python-axolotl==0.2.3
 python-axolotl-curve25519==0.4.1.post2
