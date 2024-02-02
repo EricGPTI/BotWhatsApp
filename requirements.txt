@@ -8,7 +8,7 @@ chardet==3.0.4
 cryptography==2.8
 idna==2.8
 idna-ssl==1.1.0
-multidict==4.7.4
+multidict==6.0.5
 numpy==1.18.1
 protobuf==3.11.3
 pycparser==2.19
